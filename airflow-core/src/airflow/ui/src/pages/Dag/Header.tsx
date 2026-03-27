@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { Link } from "@chakra-ui/react";
+import { Badge, Link } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import { FiBookOpen } from "react-icons/fi";
 import { useParams, Link as RouterLink } from "react-router-dom";
@@ -56,6 +56,7 @@ export const Header = ({
   const { t: translate } = useTranslation(["common", "dag"]);
   // We would still like to show the dagId even if the dag object hasn't loaded yet
   const { dagId } = useParams();
+  const isDeactivated = dag?.is_stale ?? false;
 
   const stats = [
     {
@@ -88,15 +89,19 @@ export const Header = ({
           </Link>
         ) : undefined,
     },
-    {
-      label: translate("dagDetails.nextRun"),
-      value: Boolean(dag?.next_dagrun_run_after) ? (
-        <DagRunInfo
-          logicalDate={dag?.next_dagrun_logical_date}
-          runAfter={dag?.next_dagrun_run_after as string}
-        />
-      ) : undefined,
-    },
+    ...(isDeactivated
+      ? []
+      : [
+          {
+            label: translate("dagDetails.nextRun"),
+            value: Boolean(dag?.next_dagrun_run_after) ? (
+              <DagRunInfo
+                logicalDate={dag?.next_dagrun_logical_date}
+                runAfter={dag?.next_dagrun_run_after as string}
+              />
+            ) : undefined,
+          },
+        ]),
     {
       label: translate("dagDetails.maxActiveRuns"),
       value:
@@ -140,9 +145,14 @@ export const Header = ({
       icon={<DagIcon />}
       stats={stats}
       subTitle={
-        dag !== undefined && (
+        dag !== undefined &&
+        (isDeactivated ? (
+          <Badge colorPalette="gray" data-testid="dag-deactivated-badge" variant="subtle">
+            {translate("header.deactivated")}
+          </Badge>
+        ) : (
           <TogglePause dagDisplayName={dag.dag_display_name} dagId={dag.dag_id} isPaused={dag.is_paused} />
-        )
+        ))
       }
       title={dag?.dag_display_name ?? dagId}
     />

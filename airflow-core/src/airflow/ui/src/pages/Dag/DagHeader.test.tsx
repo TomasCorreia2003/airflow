@@ -63,4 +63,25 @@ describe("Dag Documentation Modal", () => {
 
     expect(screen.queryByTestId("markdown-button")).toBeNull();
   });
+
+  it("shows a deactivated badge and hides active dag controls for stale dags", () => {
+    render(
+      <Wrapper>
+        <Header
+          dag={
+            {
+              ...MOCK_DAG,
+              is_stale: true,
+              next_dagrun_logical_date: "2025-01-14T00:00:00Z",
+              next_dagrun_run_after: "2025-01-14T00:00:00Z",
+            } as unknown as DAGDetailsResponse
+          }
+        />
+      </Wrapper>,
+    );
+
+    expect(screen.getByTestId("dag-deactivated-badge")).toBeInTheDocument();
+    expect(screen.queryByTestId("toggle-pause")).not.toBeInTheDocument();
+    expect(screen.queryByText("Next Run")).not.toBeInTheDocument();
+  });
 });
